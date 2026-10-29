@@ -1,0 +1,10 @@
+node_modules/
+.vercel/
+.netlify/
+tf.db*
+tf-data.json*
+.env
+.env.*
+!.env.example
+.DS_Store
+npm-debug.log*

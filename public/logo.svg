@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 768 768" role="img" aria-labelledby="title">
+  <title id="title">TF Energy logo</title>
+  <defs>
+    <linearGradient id="background" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#653587"/>
+      <stop offset="0.5" stop-color="#46529b"/>
+      <stop offset="1" stop-color="#1769ae"/>
+    </linearGradient>
+    <clipPath id="circle">
+      <circle cx="384" cy="384" r="382"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#circle)">
+    <rect width="768" height="768" fill="url(#background)"/>
+    <path fill="#fff" fill-rule="evenodd" d="M187 89h206c87 0 157 53 187 134h80v63H257v82h-70V89Zm70 67v67h249c-24-44-64-67-113-67H257Z"/>
+    <path fill="#fff" d="M115 375h408V300h69v468h-69V439H274c22 40 63 67 115 67h134v67H389c-91 0-164-54-188-134h-86v-64Z"/>
+  </g>
+</svg>
