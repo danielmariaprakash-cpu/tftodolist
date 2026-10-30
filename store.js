@@ -4,10 +4,10 @@
 //   3. JSON file               -> local fallback if better-sqlite3 could not be installed
 const fs = require("fs");
 const path = require("path");
-
+ 
 const prefix = "tf-energy:docs";
 const serverless = Boolean(process.env.VERCEL || process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME);
-
+ 
 // Accept the manual Upstash names AND whatever the Vercel/Netlify marketplace integration injected,
 // including prefixed names such as UPSTASH_REDIS_REST_KV_REST_API_URL / ..._TOKEN.
 const envKeys = Object.keys(process.env);
@@ -19,13 +19,13 @@ const redisUrl = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_U
   || findEnv("_REST_API_URL", "REDIS_REST_URL");
 const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN || process.env.REDIS_REST_TOKEN
   || findEnv("_REST_API_TOKEN", "REDIS_REST_TOKEN");
-
+ 
 let backend = "none";
 let redis = null;
 let sql = null;
 let fileData = null;
 let filePath = null;
-
+ 
 if (redisUrl && redisToken) {
   const { Redis } = require("@upstash/redis");
   redis = new Redis({ url: redisUrl, token: redisToken });
@@ -49,7 +49,7 @@ if (redisUrl && redisToken) {
     console.warn("better-sqlite3 unavailable, using JSON file storage:", filePath);
   }
 }
-
+ 
 const available = backend !== "none";
 const guard = () => {
   if (!available) {
@@ -59,21 +59,21 @@ const guard = () => {
     throw error;
   }
 };
-
+ 
 const parse = value => (value == null ? null : typeof value === "string" ? JSON.parse(value) : value);
 const saveFile = () => {
   const tmp = `${filePath}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(fileData));
   fs.renameSync(tmp, filePath);
 };
-
+ 
 async function get(collection, id) {
   guard();
   if (redis) return parse(await redis.hget(`${prefix}:${collection}`, id));
   if (sql) return parse(sql.q.get.get(collection, id)?.data);
   return fileData[collection]?.[id] ?? null;
 }
-
+ 
 async function put(collection, id, data) {
   guard();
   const { id: _ignored, ...doc } = data; // ids live in the key, never in the document
@@ -84,7 +84,7 @@ async function put(collection, id, data) {
     saveFile();
   }
 }
-
+ 
 async function del(collection, id) {
   guard();
   if (redis) await redis.hdel(`${prefix}:${collection}`, id);
@@ -94,7 +94,7 @@ async function del(collection, id) {
     saveFile();
   }
 }
-
+ 
 async function all(collection) {
   guard();
   if (redis) {
@@ -104,7 +104,7 @@ async function all(collection) {
   if (sql) return sql.q.all.all(collection).map(row => ({ ...JSON.parse(row.data), id: row.id }));
   return Object.entries(fileData[collection] || {}).map(([id, value]) => ({ ...value, id }));
 }
-
+ 
 // Login-attempt counter used for rate limiting.
 async function incrementCounter(key, ttlSeconds) {
   guard();
@@ -120,15 +120,16 @@ async function incrementCounter(key, ttlSeconds) {
   await put("loginAttempts", key, { count, expiresAt: at + ttlSeconds * 1000 });
   return count;
 }
-
+ 
 async function clearCounter(key) {
   guard();
   if (redis) await redis.del(`tf-energy:login:${key}`);
   else await del("loginAttempts", key);
 }
-
+ 
 module.exports = {
   all, clearCounter, del, get, incrementCounter, put,
   info: { backend, available, serverless },
   prefix,
 };
+ 
